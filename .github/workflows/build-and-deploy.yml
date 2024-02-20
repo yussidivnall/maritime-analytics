@@ -45,12 +45,12 @@ jobs:
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}:$GITHUB_SHA
           environment: production
 
-      - name: Generate deploy button (Optional)
-        uses: peter-evans/fast-forward@v3
-        with:
-          deploy_ref: "deploy/$GITHUB_SHA"
-          branches: "master"
-          environments: "staging,production"
-          # Optional custom message
-          # message: "Deploy to ${{ environment }}"
-          message: "Deploy"
+            #      - name: Generate deploy button (Optional)
+            #        uses: peter-evans/fast-forward@v3
+            #        with:
+            #          deploy_ref: "deploy/$GITHUB_SHA"
+            #          branches: "master"
+            #          environments: "staging,production"
+            #          # Optional custom message
+            #          # message: "Deploy to ${{ environment }}"
+            #          message: "Deploy"
