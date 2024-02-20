@@ -2,13 +2,17 @@ const WebSocket = require('ws');
 const http = require('http');
 const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
 const {BigQuery} = require('@google-cloud/bigquery');
+const dotenv = require('dotenv');
+const {formatPositionReport} = require('../helpers/formatters');
 
-const aisDatasetId = 'channel-rescue.AIS';
-const positionReportTableId = 'position-reports';
+dotenv.config();
+
+// const aisDatasetId = 'channel-rescue.AIS';
+const aisDatasetId = 'AIS';
+const positionReportTableId = 'Position Reports';
 const bigquery = new BigQuery();
 const aisDataset = bigquery.dataset(aisDatasetId);
-const apiKeySecretName =
-  'projects/96495653362/secrets/AISStreamAPIKey/versions/latest';
+const apiKeySecretName = process.env.AISSTREAM_APIKEY_SECRET_NAME;
 
 const mesageTypes = ['PositionReport'];
 const boats = [];
@@ -26,13 +30,13 @@ const getApiKey = async () => {
   }
 };
 
-const bufferSize = 10;
+const bufferSize = process.env.BIGQUERY_BUFFER_SIZE || 100;
 const positionReportsBuffer = [];
 
 const insertRecords = async (records, table) => {
   try {
     console.log(`appending to ${table} records ${records}`);
-    dataset.table(table).insert(records);
+    aisDataset.table(table).insert(records);
   } catch (error) {
     console.error(`Failed to insert records ${error}`);
   }
@@ -41,20 +45,24 @@ const insertRecords = async (records, table) => {
 
 const handleRecord = (record) => {
   if (record['MessageType'] == 'PositionReport') {
-    positionReportsBuffer.push(record);
+    positionReport = formatPositionReport(record);
+    console.debug(positionReport);
+    positionReportsBuffer.push(positionReport);
+    // Buffer size reached, insert to DB
     if (positionReportsBuffer.length >= bufferSize) {
       positionReports = positionReportsBuffer.splice(0, bufferSize);
       insertRecords(positionReports, positionReportTableId)
           .then( () => {})
-          .catch( (error) => {});
+          .catch( (error) => {
+            console.error(error);
+          });
     }
   }
 };
 
 getApiKey()
-    .then((apiKey)=>{
-      const ws = new WebSocket('wss://stream.aisstream.io/v0/stream');
-
+    .then((apiKey) => {
+      const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
       ws.on('open', ()=>{
         // subscribe
         const subscription = {
@@ -68,18 +76,18 @@ getApiKey()
         console.log('Socket open to AIS Stream');
       });
       ws.on('message', (message) =>{
-        console.log( JSON.parse(message) );
+        console.debug( JSON.parse(message) );
         handleRecord(JSON.parse(message));
       });
       ws.on('error', (err)=>{
-        console.log('Websocket error');
+        console.log(`Websocket error ${err}`);
       });
       ws.on('close', ()=>{
         console.log('Websocket closed');
       });
     })
     .catch( (error) => {
-      console.log('Error getting API Key I think');
+      console.log(`Error getting API Key I think ${error}`);
     });
 
 // Cloud Run Service requires an http port open
