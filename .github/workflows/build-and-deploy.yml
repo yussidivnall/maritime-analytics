@@ -1,41 +1,55 @@
-name: Build and Deploy
+name: Nodejs Deploy to Cloud Run
 
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js v21.6.0
+        uses: actions/setup-node@v2
+        with:
+          node-version: 21.6.0
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run tests
         run: npm test
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Build Docker image
+        run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}:$GITHUB_SHA .
 
-      - name: Configure Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+      - name: Login to Google Cloud Registry
+        uses: google-github-actions/auth@v3
         with:
-          service_account_email: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
-          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-          project_id: ${{ secrets.PROJECT_ID }}
+          credentials: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Build and push Docker image
-        run: |
-          docker build -t gcr.io/${{ secrets.PROJECT_ID }}/my-node-app .
-          docker push gcr.io/${{ secrets.PROJECT_ID }}/my-node-app
+      - name: Push Docker image to Artifact Registry
+        run: docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}:$GITHUB_SHA
 
-      # Add steps to deploy the Docker image to Cloud Run or any other Google Cloud service
+      - name: Deploy to Cloud Run (Optional)
+        # Replace with your actual service name, region, etc.
+        uses: google-github-actions/deploy-cloudrun@v1
+        with:
+          service: listener-service
+          platform: managed
+          region: europe-west2
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}:$GITHUB_SHA
+          environment: production
 
+      - name: Generate deploy button (Optional)
+        uses: peter-evans/fast-forward@v3
+        with:
+          deploy_ref: "deploy/$GITHUB_SHA"
+          branches: "master"
+          environments: "staging,production"
+          # Optional custom message
+          message: "Deploy to ${{ environment }}"
