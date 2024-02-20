@@ -52,4 +52,5 @@ jobs:
           branches: "master"
           environments: "staging,production"
           # Optional custom message
-          message: "Deploy to ${{ environment }}"
+          # message: "Deploy to ${{ environment }}"
+          message: "Deploy"
