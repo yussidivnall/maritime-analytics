@@ -20,7 +20,7 @@ jobs:
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
 
-      - id: 'build'
+      - id: 'build-node'
         name: 'Build the docker image'
         uses: 'actions/setup-node@v2'
         with: 
@@ -34,7 +34,7 @@ jobs:
         name: 'Run tests'
         run: npm test
 
-      - id: 'build'
+      - id: 'build-docker'
         name: 'Build Docker Image'
         run: docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}:$GITHUB_SHA .
 
