@@ -53,4 +53,7 @@ jobs:
 
       - id: 'push'
         name: 'Push to Artifact Registry'
-        run: docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
+        run: |- 
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
+          # run: docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
