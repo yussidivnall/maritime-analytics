@@ -26,7 +26,9 @@ jobs:
 
       - id: 'configure-gcloud'
         name: 'Configure the region'
-        run: gcloud auth configure-docker europe-west2-docker.pkg.dev
+        run: |-
+          gcloud auth login
+          gcloud auth configure-docker europe-west2-docker.pkg.dev
 
 
       - id: 'build-node'
