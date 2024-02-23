@@ -20,6 +20,11 @@ jobs:
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
 
+      - id: 'setup-gcloud'
+        name: 'Setup the Google Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+
+
       - id: 'build-node'
         name: 'Build the docker image'
         uses: 'actions/setup-node@v2'
