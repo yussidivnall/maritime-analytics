@@ -24,6 +24,10 @@ jobs:
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
+      - id: 'configure-gcloud'
+        name: 'Configure the region'
+        run: gcloud auth configure-docker europe-west2-docker.pkg.dev
+
 
       - id: 'build-node'
         name: 'Build the docker image'
