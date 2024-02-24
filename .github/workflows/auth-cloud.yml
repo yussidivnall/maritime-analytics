@@ -5,6 +5,7 @@ on:
 
 env:
   WORKLOAD_IDENTITY_PROVIDER: projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github
+  SERVICE_ACCOUNT: artifact-registry-service@channel-rescue.iam.gserviceaccount.com
 
 jobs:
   authenticate:
@@ -21,8 +22,7 @@ jobs:
         uses: 'google-github-actions/auth@v1'
         with:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-          # workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
-          service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
+          service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - id: 'setup-gcloud'
         name: 'Setup the Google Cloud SDK'
