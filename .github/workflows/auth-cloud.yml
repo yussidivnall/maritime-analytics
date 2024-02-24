@@ -17,19 +17,13 @@ jobs:
         name: 'Authenticate GCloud'
         uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+          # workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+          workload_identity_provider: 'projects/channel-rescue/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
 
       - id: 'setup-gcloud'
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
-
-          # - id: 'configure-gcloud'
-          #   name: 'Configure the region'
-          #   run: |-
-          #     gcloud auth login
-          #     gcloud auth configure-docker europe-west2-docker.pkg.dev
-
 
       - id: 'build-node'
         name: 'Build the docker image'
