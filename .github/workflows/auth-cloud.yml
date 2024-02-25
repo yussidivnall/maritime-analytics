@@ -34,7 +34,9 @@ jobs:
       - id: 'auth_docker'
         name: 'Authenticate Docker repo'
         run: |- 
-          gcloud auth list
+          echo "Authenticated as ${{ env.SERVICE_ACCOUNT }},\n with identity provider ${{ env.WORKLOAD_IDENTITY_PROVIDER }}"
+          gcloud auth list --format=json
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           gcloud auth print-access-token --audience=${{ env.WORKLOAD_IDENTITY_PROVIDER }} | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev/channel-rescue
 
 
