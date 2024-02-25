@@ -33,7 +33,7 @@ jobs:
       - id: 'auth_docker'
         name: 'Authenticate Docker repo'
         run: |- 
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
 
 
       - id: 'build-node'
