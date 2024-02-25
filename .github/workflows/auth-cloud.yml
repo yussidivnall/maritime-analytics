@@ -47,7 +47,7 @@ jobs:
       - id: 'build-docker'
         name: 'Build Docker Image'
 # run: docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
-        run: docker build -t ${{ env.DOCKER_IMAGE_PATH }}:latest -t ${{ env.DOCKER_IMAGE_PATH }}:${{ env.GITHUB_SHA }} .
+        run: docker build -t ${{ env.DOCKER_IMAGE_PATH }}:latest -t ${{ env.DOCKER_IMAGE_PATH }}:${{ github.sha }} .
 
 
       - id: 'push'
