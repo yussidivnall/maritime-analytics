@@ -8,3 +8,6 @@ These tools rely heavily on [AISStream](https://aisstream.io/), If you find this
 
 This is writen to be deployed on Google Cloud Platform (GCP), It utilises BigQuery and Cloud Run. It should be easily adaptable to other cloud providers.
 
+For the pipeline to work, you need to setup federated wordload authentication
+You also need to define the following Secrets in Github:
+GCP_PROJECT_ID, GCP_PROJECT_NUMBER, GCP_REPOSITORY
