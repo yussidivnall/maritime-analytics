@@ -54,13 +54,13 @@ jobs:
         name: 'Push to Artifact Registry'
         run: |- 
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener --all-tags
-          # docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
 
 
-      - id: 'deploy'
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          service: 'ais-listener'
-          image: 'gcr.io/cloudrun/hello'
+          #       - id: 'deploy'
+          #         uses: 'google-github-actions/deploy-cloudrun@v2'
+          #         with:
+          #           service: 'ais-listener'
+          #           image: 'gcr.io/cloudrun/hello'
 
