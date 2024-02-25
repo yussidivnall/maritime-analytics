@@ -30,6 +30,12 @@ jobs:
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
+      - id: 'auth_docker'
+        name: 'Authenticate Docker repo'
+        run: |- 
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+
+
       - id: 'build-node'
         name: 'Build the docker image'
         uses: 'actions/setup-node@v2'
@@ -53,7 +59,7 @@ jobs:
       - id: 'push'
         name: 'Push to Artifact Registry'
         run: |- 
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          # gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
           # docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener --all-tags
 
