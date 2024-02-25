@@ -8,6 +8,7 @@ env:
   WORKLOAD_IDENTITY_PROVIDER: projects/${{ secrets.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github
   SERVICE_ACCOUNT: artifact-registry-service@channel-rescue.iam.gserviceaccount.com
   DOCKER_IMAGE_PATH: europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener
+  AUDIENCE: projects/channel-rescue/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github
 
 jobs:
   authenticate:
