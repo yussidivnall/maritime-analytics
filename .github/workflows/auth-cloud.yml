@@ -46,8 +46,8 @@ jobs:
 
       - id: 'build-docker'
         name: 'Build Docker Image'
-# run: docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
-        run: docker build -t ${{ env.DOCKER_IMAGE_PATH }}:latest -t ${{ env.DOCKER_IMAGE_PATH }}:${{ github.sha }} .
+        run: docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+# run: docker build -t ${{ env.DOCKER_IMAGE_PATH }}:latest -t ${{ env.DOCKER_IMAGE_PATH }}:${{ github.sha }} .
 
 
       - id: 'push'
@@ -55,7 +55,7 @@ jobs:
         run: |- 
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
-          docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener --all-tags
+          # docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener --all-tags
 
 
           #       - id: 'deploy'
