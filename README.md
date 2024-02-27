@@ -20,7 +20,11 @@ The JSON config file defines arean, which is a list of regions to pass to AISStr
 
 You can specify which boats to request, using an array of MMSI codes (as strings).
 
+# Google Cloud Resources
+You need a secret called `AISStreamAPIKey`, a big query database to store the records.
+By Defaul, this will be the Dataset 'AIS' using the table 'Position Reports'.
 
+You also need a service account with access to the bucket CONFIG_BUCKET, the AISSTREAM_APIKEY_SECRET_NAME secret and insert rights to BIGQUERY_DATASET_ID
 
 ## Run
 This is largely meant to run of Google Cloud Services, however, you can run it locally using
