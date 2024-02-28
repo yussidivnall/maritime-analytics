@@ -1,4 +1,4 @@
-const {downloadAsJson, loadFileAsJson} = require('../helpers/utils');
+const {loadFileAsJson} = require('../src/helpers/utils');
 describe('Test utils', () => {
   const OLD_ENV = process.env;
 
@@ -13,7 +13,9 @@ describe('Test utils', () => {
 
 
   test('Load JSON from PATH', () => {
-    process.env.CONFIG_PATH = '../config/ais_listener.conf.json';
-    jsonFile = loadFileAsJson();
+    loadFileAsJson( './config/ais_listener.example.conf.json')
+        .then( (res) => {
+          expect(res).toStrictEqual({arena: [[[]]], boats: []});
+        });
   });
 });
