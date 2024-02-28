@@ -4,23 +4,31 @@ const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
 const {BigQuery} = require('@google-cloud/bigquery');
 const dotenv = require('dotenv');
 const {formatPositionReport} = require('../helpers/formatters');
+const {downloadAsJson, loadFileAsJson} = require('../helpers/utils');
 
 dotenv.config();
 
+const DEFAULT_CONFIG_PATH = './config/ais_listener.conf.json';
 // const aisDatasetId = 'channel-rescue.AIS';
-const aisDatasetId = 'AIS';
-const positionReportTableId = 'Position Reports';
+const aisDatasetId = process.env.BIGQUERY_DATASET_ID || 'AIS';
+const positionReportTableId = process.env.BIGQUERY_POSITION_REPORTS_TABLE_ID ||
+  'Position Reports';
 const bigquery = new BigQuery();
 const aisDataset = bigquery.dataset(aisDatasetId);
 const apiKeySecretName = process.env.AISSTREAM_APIKEY_SECRET_NAME;
-
 const mesageTypes = ['PositionReport'];
-const boats = JSON.parse(process.env.BOATS_TO_TRACK);
-const arena = JSON.parse(process.env.AREA_OF_INTEREST);
+const positionReportsBuffer = [];
+const bufferSize = process.env.BIGQUERY_BUFFER_SIZE || 100;
 
 const client = new SecretManagerServiceClient();
-const getApiKey = async () => {
+
+/** Gets the API key from the Secrets Manager
+  * if AISSTREAM_APIKEY is defined use this otherwise use
+  * secret AISSTREAM_APIKEY_SECRET_NAME
+  * */
+async function getApiKey() {
   try {
+    if (process.env.AISSTREAM_APIKEY) return process.env.AISSTREAM_APIKEY;
     const [version] = await client.accessSecretVersion(
         {name: apiKeySecretName});
     const apiKey = version.payload.data.toString('utf8');
@@ -30,8 +38,42 @@ const getApiKey = async () => {
   }
 };
 
-const bufferSize = process.env.BIGQUERY_BUFFER_SIZE || 100;
-const positionReportsBuffer = [];
+
+/** Loads a JSON config file */
+async function loadConfig() {
+  if (process.env.CONFIG_BUCKET && process.env.CONFIG_PATH) {
+    const bucket = process.env.CONFIG_BUCKET;
+    const path = process.env.CONFIG_PATH;
+    console.debug(`getting config from bucket: ${bucket} : ${path}`);
+    return await downloadAsJson(bucket, path);
+  } else if (process.env.CONFIG_PATH) {
+    const path = process.env.CONFIG_PATH;
+    console.debug(`getting cofig in file ${path}`);
+    return await loadFileAsJson(path);
+  } else {
+    console.debug(`getting cofig in file ${DEFAULT_CONFIG_PATH}`);
+    return await loadFileAsJson(DEFAULT_CONFIG_PATH);
+  }
+  console.error('Failed to load config file');
+  exit(1);
+};
+
+/** Gets a config
+  * if CONFIG_BUCKET and CONFIG_PATH are defined
+  *   load config from google cloud bucket
+  * if onlut CONFIG_PATH is defined
+  *   load config from local path
+  * otherwise
+  *   try to load config from DEFAULT_CONFIG_PATH
+  * Then, adds 'apiKey' to config
+  * */
+async function getConfig() {
+  const config = await loadConfig();
+  const apiKey = await getApiKey();
+  config.apiKey = apiKey;
+  return config;
+};
+
 
 const insertRecords = async (records, table) => {
   try {
@@ -60,23 +102,25 @@ const handleRecord = (record) => {
   }
 };
 
-const getSubscriptionRequest = (apiKey) => {
+const getSubscriptionRequest = (config) => {
   const subscription = {
-    Apikey: apiKey,
-    BoundingBoxes: arena,
-    FiltersShipMMSI: boats,
+    Apikey: config.apiKey,
+    BoundingBoxes: config.arena,
+    FiltersShipMMSI: config.boats,
     FilterMessageTypes: mesageTypes,
   };
   return subscription;
 };
 
 
-getApiKey()
-    .then((apiKey) => {
+// getApiKey()
+getConfig()
+    .then((config) => {
+      apiKey = config.apiKey;
       const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
       ws.on('open', ()=>{
         // subscribe
-        const subscription = getSubscriptionRequest(apiKey);
+        const subscription = getSubscriptionRequest(config);
         // send
         ws.send(JSON.stringify(subscription));
         console.log('Socket open to AIS Stream');
@@ -94,7 +138,7 @@ getApiKey()
       });
     })
     .catch( (error) => {
-      console.log(`Error getting API Key I think ${error}`);
+      console.log(`Error loading config: ${error}`);
     });
 
 // Cloud Run Service requires an http port open
