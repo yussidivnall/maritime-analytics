@@ -8,7 +8,6 @@ const aisListener = require('./services/listener_service');
 
 const app = express();
 
-
 app.use( express.json() );
 app.get('/info', (req, resp) => {
   const info = aisListener.getInfo();
@@ -27,8 +26,7 @@ async function startServer() {
     const config = await getConfig();
     aisListener.run(config);
 
-    app.listen(port, ()=>{
-      console.log(config);
+    app.listen(config.port, ()=>{
       console.log(`Listening on port ${port}`);
     });
   } catch (err) {

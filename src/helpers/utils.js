@@ -78,8 +78,11 @@ async function loadConfig() {
   * */
 async function getConfig() {
   const config = await loadConfig();
-  const apiKey = await getApiKey();
-  config.apiKey = apiKey;
+  config['api_key'] = process.env.AISSTREAM_APIKEY ||
+    config['api_key'] || await getApiKey();
+  config['port'] = process.env.PORT || config.port || 8080;
+  config['buffer_size'] = process.env.BUFFER_SIZE || config.buffer_size || 100;
+  // TODO override more configs with ENVs if present
   return config;
 };
 

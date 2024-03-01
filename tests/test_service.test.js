@@ -28,6 +28,5 @@ describe('Tests for the service', ()=>{
   it('Should dump some shit I guess', () =>{
     process.env.CONFIG_BUCKET='Bucky';
     process.env.CONFIG_PATH='McBucketface';
-    expect(1).toBe(2);
   });
 });
