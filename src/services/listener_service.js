@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-const http = require('http');
 const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
 const {BigQuery} = require('@google-cloud/bigquery');
 const dotenv = require('dotenv');
@@ -21,6 +20,9 @@ const positionReportsBuffer = [];
 const bufferSize = process.env.BIGQUERY_BUFFER_SIZE || 100;
 
 const client = new SecretManagerServiceClient();
+
+let staticInfo = {arena: [], tracked_boats: []};
+let state = []; // eslint-disable-line
 
 /** Gets the API key from the Secrets Manager
   * if AISSTREAM_APIKEY is defined use this otherwise use
@@ -74,8 +76,30 @@ async function getConfig() {
   return config;
 };
 
+/**
+ * Update the snapshot (state)
+ * Checks if boat is already in state, insert if not, update if so
+ *
+ * @param {Object} positionReport - A formatted possition report
+ */
+function updateState(positionReport) {
+  const mmsi = positionReport.mmsi;
+  const idx = state.findIndex((boat) => boat.mmsi === mmsi);
+  if (idx === -1) {
+    state.push(positionReport);
+  } else {
+    state[idx]=positionReport;
+  }
+}
 
-const insertRecords = async (records, table) => {
+
+/**
+ * Insert records to table
+ *
+ * @param {Object[]} records
+ * @param {Object} table
+ */
+async function insertRecords(records, table) {
   try {
     console.log(`appending to ${table} records ${records}`);
     aisDataset.table(table).insert(records);
@@ -84,17 +108,24 @@ const insertRecords = async (records, table) => {
   }
 };
 
-
-const handleRecord = (record) => {
+/**
+ * Handles a new message from AISStream
+ *
+ * currently only handles 'PositionReport' message types
+ * @param {Object} record - An AIS Message
+ */
+function handleRecord(record) {
   if (record['MessageType'] == 'PositionReport') {
     positionReport = formatPositionReport(record);
     console.debug(positionReport);
+    updateState(positionReport);
+    // TODO check granularity first
     positionReportsBuffer.push(positionReport);
     // Buffer size reached, insert to DB
     if (positionReportsBuffer.length >= bufferSize) {
       positionReports = positionReportsBuffer.splice(0, bufferSize);
       insertRecords(positionReports, positionReportTableId)
-          .then( () => {})
+          // .then( () => {})
           .catch( (error) => {
             console.error(error);
           });
@@ -102,7 +133,13 @@ const handleRecord = (record) => {
   }
 };
 
-const getSubscriptionRequest = (config) => {
+/**
+ * Gets the APIStream subscription request
+ *
+ * @param {Object} config - A config object containing apiKey, areana and boats
+ * @return {Object} The contents of a subscription request
+ */
+function getAPISubscriptionRequest(config) {
   const subscription = {
     Apikey: config.apiKey,
     BoundingBoxes: config.arena,
@@ -110,17 +147,19 @@ const getSubscriptionRequest = (config) => {
     FilterMessageTypes: mesageTypes,
   };
   return subscription;
-};
+}
 
 
-// getApiKey()
 getConfig()
     .then((config) => {
-      apiKey = config.apiKey;
+      staticInfo = {
+        arena: config.arena,
+        tracked_boats: config.boats,
+      };
       const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
       ws.on('open', ()=>{
         // subscribe
-        const subscription = getSubscriptionRequest(config);
+        const subscription = getAPISubscriptionRequest(config);
         // send
         ws.send(JSON.stringify(subscription));
         console.log('Socket open to AIS Stream');
@@ -141,19 +180,25 @@ getConfig()
       console.log(`Error loading config: ${error}`);
     });
 
-// Cloud Run Service requires an http port open
-// Create a dummy HTTP server to listen on a port
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Cloud Run is running!');
-});
+/**
+ * Returns basic static info: arena, tracked boats
+ * @return {Object}
+ */
+function getInfo() {
+  return staticInfo;
+}
 
-// Define the port to listen on
-const PORT = process.env.PORT || 8080;
+/**
+ * Gets the current state of boats (last snapshot)
+ *
+ *
+ * @return {Object[]} list of all boats latest known states (within snapshot)
+ */
+function getState() {
+  return state;
+}
 
-// Start the HTTP server
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+module.exports = {
+  getInfo,
+  getState,
+};
