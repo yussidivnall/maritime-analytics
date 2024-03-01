@@ -1,80 +1,19 @@
 const WebSocket = require('ws');
-const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
 const {BigQuery} = require('@google-cloud/bigquery');
-const dotenv = require('dotenv');
 const {formatPositionReport} = require('../helpers/formatters');
-const {downloadAsJson, loadFileAsJson} = require('../helpers/utils');
 
-dotenv.config();
-
-const DEFAULT_CONFIG_PATH = './config/ais_listener.conf.json';
 // const aisDatasetId = 'channel-rescue.AIS';
-const aisDatasetId = process.env.BIGQUERY_DATASET_ID || 'AIS';
-const positionReportTableId = process.env.BIGQUERY_POSITION_REPORTS_TABLE_ID ||
-  'Position Reports';
+let bufferSize = 100;
+let aisDatasetId = 'AIS';
+let positionReportTableId = 'Position Reports';
 const bigquery = new BigQuery();
-const aisDataset = bigquery.dataset(aisDatasetId);
-const apiKeySecretName = process.env.AISSTREAM_APIKEY_SECRET_NAME;
 const mesageTypes = ['PositionReport'];
 const positionReportsBuffer = [];
-const bufferSize = process.env.BIGQUERY_BUFFER_SIZE || 100;
 
-const client = new SecretManagerServiceClient();
-
+// Stores the static info (mostly just some config values)
 let staticInfo = {arena: [], tracked_boats: []};
-let state = []; // eslint-disable-line
-
-/** Gets the API key from the Secrets Manager
-  * if AISSTREAM_APIKEY is defined use this otherwise use
-  * secret AISSTREAM_APIKEY_SECRET_NAME
-  * */
-async function getApiKey() {
-  try {
-    if (process.env.AISSTREAM_APIKEY) return process.env.AISSTREAM_APIKEY;
-    const [version] = await client.accessSecretVersion(
-        {name: apiKeySecretName});
-    const apiKey = version.payload.data.toString('utf8');
-    return apiKey;
-  } catch (err) {
-    console.error('Error accessing secret:', err);
-  }
-};
-
-
-/** Loads a JSON config file */
-async function loadConfig() {
-  if (process.env.CONFIG_BUCKET && process.env.CONFIG_PATH) {
-    const bucket = process.env.CONFIG_BUCKET;
-    const path = process.env.CONFIG_PATH;
-    console.debug(`getting config from bucket: ${bucket} : ${path}`);
-    return await downloadAsJson(bucket, path);
-  } else if (process.env.CONFIG_PATH) {
-    const path = process.env.CONFIG_PATH;
-    console.debug(`getting cofig in file ${path}`);
-    return await loadFileAsJson(path);
-  } else {
-    console.debug(`getting cofig in file ${DEFAULT_CONFIG_PATH}`);
-    return await loadFileAsJson(DEFAULT_CONFIG_PATH);
-  }
-  console.error('Failed to load config file');
-  exit(1);
-};
-
-/** Gets a config
-  * if CONFIG_BUCKET and CONFIG_PATH are defined
-  *   load config from google cloud bucket
-  * if onlut CONFIG_PATH is defined
-  *   load config from local path
-  * otherwise
-  *   try to load config from DEFAULT_CONFIG_PATH
-  * Then, adds 'apiKey' to config
-  * */
-async function getConfig() {
-  const config = await loadConfig();
-  const apiKey = await getApiKey();
-  config.apiKey = apiKey;
-  return config;
-};
+// Store the latest known position of each bot
+const state = [];
 
 /**
  * Update the snapshot (state)
@@ -101,7 +40,8 @@ function updateState(positionReport) {
  */
 async function insertRecords(records, table) {
   try {
-    console.log(`appending to ${table} records ${records}`);
+    console.log(`appending to ${table}`);
+    const aisDataset = bigquery.dataset(aisDatasetId);
     aisDataset.table(table).insert(records);
   } catch (error) {
     console.error(`Failed to insert records ${error}`);
@@ -117,7 +57,7 @@ async function insertRecords(records, table) {
 function handleRecord(record) {
   if (record['MessageType'] == 'PositionReport') {
     positionReport = formatPositionReport(record);
-    console.debug(positionReport);
+    // console.debug(positionReport);
     updateState(positionReport);
     // TODO check granularity first
     positionReportsBuffer.push(positionReport);
@@ -136,12 +76,12 @@ function handleRecord(record) {
 /**
  * Gets the APIStream subscription request
  *
- * @param {Object} config - A config object containing apiKey, areana and boats
+ * @param {Object} config - A config object containing api_key, areana, boats...
  * @return {Object} The contents of a subscription request
  */
 function getAPISubscriptionRequest(config) {
   const subscription = {
-    Apikey: config.apiKey,
+    Apikey: config.api_key,
     BoundingBoxes: config.arena,
     FiltersShipMMSI: config.boats,
     FilterMessageTypes: mesageTypes,
@@ -149,36 +89,36 @@ function getAPISubscriptionRequest(config) {
   return subscription;
 }
 
-
-getConfig()
-    .then((config) => {
-      staticInfo = {
-        arena: config.arena,
-        tracked_boats: config.boats,
-      };
-      const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
-      ws.on('open', ()=>{
-        // subscribe
-        const subscription = getAPISubscriptionRequest(config);
-        // send
-        ws.send(JSON.stringify(subscription));
-        console.log('Socket open to AIS Stream');
-      });
-      ws.on('message', (message) =>{
-        console.debug( JSON.parse(message) );
-        handleRecord(JSON.parse(message));
-      });
-      ws.on('error', (err)=>{
-        console.error(`Websocket error ${err}`);
-      });
-      ws.on('close', ()=>{
-        console.log('Websocket closed');
-        process.exit();
-      });
-    })
-    .catch( (error) => {
-      console.log(`Error loading config: ${error}`);
-    });
+/** Run the AIS Listener service */
+async function run(config) {
+  aisDatasetId = config['dataset_id'];
+  positionReportTableId = config['position_reports_table_id'];
+  bufferSize = config['buffer_size'];
+  console.log(`Buffer Size ${bufferSize}`);
+  staticInfo = {
+    arena: config.arena,
+    tracked_boats: config.boats,
+  };
+  const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
+  ws.on('open', ()=>{
+    // subscribe
+    const subscription = getAPISubscriptionRequest(config);
+    // send
+    ws.send(JSON.stringify(subscription));
+    console.log('Socket open to AIS Stream');
+  });
+  ws.on('message', (message) =>{
+    // console.debug( JSON.parse(message) );
+    handleRecord(JSON.parse(message));
+  });
+  ws.on('error', (err)=>{
+    console.error(`Websocket error ${err}`);
+  });
+  ws.on('close', ()=>{
+    console.log('Websocket closed');
+    process.exit();
+  });
+}
 
 /**
  * Returns basic static info: arena, tracked boats
@@ -191,14 +131,21 @@ function getInfo() {
 /**
  * Gets the current state of boats (last snapshot)
  *
- *
+ * @param {Number[]} MMSIs - Get specific boats snapshot, default to all boats.
  * @return {Object[]} list of all boats latest known states (within snapshot)
  */
-function getState() {
-  return state;
+function getState(MMSIs=null) {
+  if (MMSIs) {
+    return state.filter( (element) => {
+      MMSIs.includes(element.mmsi);
+    });
+  } else {
+    return state;
+  }
 }
 
 module.exports = {
   getInfo,
   getState,
+  run,
 };

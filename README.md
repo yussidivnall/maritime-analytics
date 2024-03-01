@@ -15,7 +15,7 @@ In order to run, environment variables defined in env.example needs to be set.
 
 The JSON config file defines arean, which is a list of regions to pass to AISStream, giving lat/long pairs
 ```json
-  "arena": [[[ TOP_LEFT_LAT_1, TOP_LEFT_LONG_1], [BOTTOM_RIGHT_LAT_1, BOTTOM_RIGHT_LONG_1]]] 
+  "arena": [[[ "TOP_LEFT_LAT_1", "TOP_LEFT_LONG_1"], ["BOTTOM_RIGHT_LAT_1", "BOTTOM_RIGHT_LONG_1"]]] 
 ```
 
 You can specify which boats to request, using an array of MMSI codes (as strings).
@@ -31,3 +31,9 @@ This is largely meant to run of Google Cloud Services, however, you can run it l
 `npm start`
 provided you set up the required resources.
 
+
+### API
+The application exposes port 8080 by default, with the following endpoints:
+
+`/info` - basic static information, arena and tracked boat list
+`/state` - The latest snapshot of boats' positions.
