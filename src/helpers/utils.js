@@ -32,15 +32,11 @@ async function loadFileAsJson(path) {
 };
 
 
-/** Gets the API key from the Secrets Manager
-  * if AISSTREAM_APIKEY is defined use this otherwise use
-  * secret AISSTREAM_APIKEY_SECRET_NAME
-  * */
-async function getApiKey() {
+/** Gets the API key from the Secrets Manager */
+async function getApiKeyFromSecretsManager(secretName) {
   try {
-    if (process.env.AISSTREAM_APIKEY) return process.env.AISSTREAM_APIKEY;
     const [version] = await client.accessSecretVersion(
-        {name: apiKeySecretName});
+        {name: secretName});
     const apiKey = version.payload.data.toString('utf8');
     return apiKey;
   } catch (err) {
@@ -78,8 +74,11 @@ async function loadConfig() {
   * */
 async function getConfig() {
   const config = await loadConfig();
+  config['api_key_secret_name'] = process.env.AISSTREAM_APIKEY_SECRET_NAME ||
+    config['api_key_secret_name'];
   config['api_key'] = process.env.AISSTREAM_APIKEY ||
-    config['api_key'] || await getApiKey();
+    config['api_key'] ||
+    await getApiKeyFromSecretsManager(config['api_key_secret_name']);
   config['port'] = process.env.PORT || config.port || 8080;
   config['buffer_size'] = process.env.BUFFER_SIZE || config.buffer_size || 100;
   // TODO override more configs with ENVs if present
