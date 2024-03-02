@@ -20,7 +20,7 @@ jobs:
         run: |-
           echo "Trying to run some commands that require authenticated service"
           gcloud auth list
-          gcloud auth configure-docker
-          gcloud artifacts docker images list 
-          gcloud artifacts repositories list
+          # gcloud auth configure-docker
+          # gcloud artifacts docker images list 
+          # gcloud artifacts repositories list
 
