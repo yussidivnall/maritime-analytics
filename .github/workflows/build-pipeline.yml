@@ -15,6 +15,11 @@ jobs:
         with:
           project_id: 'channel-rescue'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+
+      - id: 'setup-gcloud'
+        name: 'Setup the Google Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+
       - id: 'try'
         name: 'Try to run service restricted commands'
         run: |-
