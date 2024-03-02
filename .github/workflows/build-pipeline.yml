@@ -15,6 +15,7 @@ jobs:
         with:
           project_id: 'channel-rescue'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+          service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
           create_credentials_file: true
 
       - id: 'setup-gcloud'
