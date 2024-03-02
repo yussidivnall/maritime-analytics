@@ -21,10 +21,12 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v1'
 
       - id: 'auth_docker'
-        name: 'Try to run service restricted commands'
+        name: 'Authenticate to Artifcat Registry with Docker'
         run: |-
-          echo "Trying to run some commands that require authenticated service"
-          gcloud auth configure-docker europe-west2
-          gcloud artifacts docker images list 
-          gcloud artifacts repositories list
+          echo "Authenticating to docker and listing stuff"
+          gcloud auth list --format=json
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          # gcloud auth configure-docker europe-west2
+          # gcloud artifacts docker images list 
+          # gcloud artifacts repositories list
 
