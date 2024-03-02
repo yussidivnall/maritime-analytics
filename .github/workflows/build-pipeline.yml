@@ -19,5 +19,8 @@ jobs:
         name: 'Try to run service restricted commands'
         run: |-
           echo "Trying to run some commands that require authenticated service"
+          gcloud auth configure-docker
+          gcloud artifacts docker images list 
+          gcloud auth list
           gcloud artifacts repositories list
 
