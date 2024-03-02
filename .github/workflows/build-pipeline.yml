@@ -20,12 +20,11 @@ jobs:
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
-      - id: 'try'
+      - id: 'auth_docker'
         name: 'Try to run service restricted commands'
         run: |-
           echo "Trying to run some commands that require authenticated service"
-          gcloud auth list
-          # gcloud auth configure-docker
-          # gcloud artifacts docker images list 
-          # gcloud artifacts repositories list
+          gcloud auth configure-docker europe-west2
+          gcloud artifacts docker images list 
+          gcloud artifacts repositories list
 
