@@ -20,19 +20,10 @@ jobs:
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
-      - id: 'auth_docker'
-        name: 'Authenticate to Artifcat Registry with Docker'
-        run: |-
-          echo "Authenticating to docker and listing stuff"
-          # gcloud auth list --format=json
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
-          # gcloud auth configure-docker europe-west2
-          echo "Images on europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener"
-          # gcloud artifacts docker images list europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener
-
       - id: 'build_docker'
         name: 'Build and push the Docker image'
         run: |-
           echo "Dockerising..."
           docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
