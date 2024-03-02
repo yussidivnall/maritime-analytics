@@ -19,5 +19,5 @@ jobs:
         name: 'Try to run service restricted commands'
         run: |-
           echo "Trying to run some commands that require authenticated service"
-          gcloud projects get-iam-policy channel-rescue
+          gcloud artifacts repositories list
 
