@@ -25,5 +25,6 @@ jobs:
         run: |-
           echo "Dockerising..."
           docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+          gcloud auth configure-docker europe-west2-docker.pkg.dev
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
