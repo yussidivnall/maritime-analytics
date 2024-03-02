@@ -20,6 +20,12 @@ jobs:
         name: 'Setup the Google Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
+      - name: Check Identity
+        run: gcloud auth list
+      - name: Check Permissions
+        run: gcloud iam service-accounts get-iam-policy artifact-registry-service@channel-rescue.iam.gserviceaccount.com
+
+
       - id: 'build_docker'
         name: 'Build and push the Docker image'
         run: |-
