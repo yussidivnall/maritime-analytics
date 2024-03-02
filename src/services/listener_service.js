@@ -6,6 +6,7 @@ const {formatPositionReport} = require('../helpers/formatters');
 let bufferSize = 100;
 let aisDatasetId = 'AIS';
 let positionReportTableId = 'Position Reports';
+let granularity = 30000;
 const bigquery = new BigQuery();
 const mesageTypes = ['PositionReport'];
 const positionReportsBuffer = [];
@@ -57,10 +58,19 @@ async function insertRecords(records, table) {
 function handleRecord(record) {
   if (record['MessageType'] == 'PositionReport') {
     positionReport = formatPositionReport(record);
+    const mmsi = positionReport['mmsi'];
+    const lastState = getState([mmsi])[0];
+
+
+    // Check if last boat state isn't in states, or if granularity time elapse
+    if (!lastState ||
+      Date.parse(positionReport['time_utc']) -
+      Date.parse(lastState['time_utc']) > granularity) {
+      updateState(positionReport);
+      positionReportsBuffer.push(positionReport);
+    }
+
     // console.debug(positionReport);
-    updateState(positionReport);
-    // TODO check granularity first
-    positionReportsBuffer.push(positionReport);
     // Buffer size reached, insert to DB
     if (positionReportsBuffer.length >= bufferSize) {
       positionReports = positionReportsBuffer.splice(0, bufferSize);
@@ -94,6 +104,7 @@ async function run(config) {
   aisDatasetId = config['dataset_id'];
   positionReportTableId = config['position_reports_table_id'];
   bufferSize = config['buffer_size'];
+  granularity = config['granularity'];
   console.log(`Buffer Size ${bufferSize}`);
   staticInfo = {
     arena: config.arena,
@@ -101,9 +112,8 @@ async function run(config) {
   };
   const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
   ws.on('open', ()=>{
-    // subscribe
+    // subscribe to AIS Stream
     const subscription = getAPISubscriptionRequest(config);
-    // send
     ws.send(JSON.stringify(subscription));
     console.log('Socket open to AIS Stream');
   });
@@ -136,9 +146,10 @@ function getInfo() {
  */
 function getState(MMSIs=null) {
   if (MMSIs) {
-    return state.filter( (element) => {
-      MMSIs.includes(element.mmsi);
+    const ret = state.filter( (element) => {
+      return MMSIs.includes(element.mmsi);
     });
+    return ret;
   } else {
     return state;
   }

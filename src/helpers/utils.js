@@ -2,7 +2,6 @@ const {Storage} = require('@google-cloud/storage');
 const {SecretManagerServiceClient} = require('@google-cloud/secret-manager');
 
 const DEFAULT_CONFIG_PATH = './config/ais_listener.conf.json';
-const apiKeySecretName = process.env.AISSTREAM_APIKEY_SECRET_NAME;
 const client = new SecretManagerServiceClient();
 
 /**
@@ -81,6 +80,8 @@ async function getConfig() {
     await getApiKeyFromSecretsManager(config['api_key_secret_name']);
   config['port'] = process.env.PORT || config.port || 8080;
   config['buffer_size'] = process.env.BUFFER_SIZE || config.buffer_size || 100;
+  config['granularity'] = process.env.GRANULARITY ||
+    config.granularity || 30000;
   // TODO override more configs with ENVs if present
   return config;
 };
