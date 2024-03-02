@@ -1,0 +1,23 @@
+name: "Build and deploy"
+
+on:
+  - push
+
+jobs:
+  authenticate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - uses: 'actions/checkout@v4'
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'channel-rescue'
+          workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+      - id: 'try'
+        name: 'Try to run service restricted commands'
+        run: |-
+          echo "Trying to run some commands that require authenticated service"
+          gcloud projects get-iam-policy channel-rescue
+
