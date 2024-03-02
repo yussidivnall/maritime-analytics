@@ -28,7 +28,7 @@ jobs:
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
           # gcloud auth configure-docker europe-west2
           echo "Images on europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener"
-          gcloud artifacts docker images list europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener
+          # gcloud artifacts docker images list europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener
 
       - id: 'build_docker'
         name: 'Build and push the Docker image'
