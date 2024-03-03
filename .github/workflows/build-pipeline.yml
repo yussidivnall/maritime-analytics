@@ -20,10 +20,10 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID}}
+          project_id: ${{ env.PROJECT_ID }}
           token_format: 'access_token'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
-          service_account: ${{SERVICE_ACCOUNT}}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
           create_credentials_file: true
 
       - id: 'manual-with-token'
