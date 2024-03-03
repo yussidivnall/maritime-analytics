@@ -5,8 +5,6 @@ env:
   SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
   WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
   DOCKER_REGISTRY: https://europe-west2-docker.pkg.dev
-  DOCKER_IMAGE: ${{ env.DOCKER_REGISTRY }}/${{env.PROJECT_ID}}/listener-services/ais-listener
-
 
 on:
   - push
