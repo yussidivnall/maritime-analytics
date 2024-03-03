@@ -31,7 +31,7 @@ jobs:
         run: |-
           echo "Manual"
           echo "${{ steps.auth.output.access_token }}"
-          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d @request.json https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT}:getIamPolicy
+          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT}:getIamPolicy
             #       - id: 'setup-gcloud'
             #         name: 'Setup the Google Cloud SDK'
             #         uses: 'google-github-actions/setup-gcloud@v1'
