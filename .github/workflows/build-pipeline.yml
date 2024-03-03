@@ -31,25 +31,23 @@ jobs:
         run: |-
           echo "Manual"
           echo "${{ steps.auth.output.access_token }}"
-          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json" https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT}:getIamPolicy
-
-
-      - id: 'setup-gcloud'
-        name: 'Setup the Google Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
-
-      - name: Check Identity
-        run: gcloud auth list
-
-      - name: Check Permissions
-        run: gcloud iam service-accounts get-iam-policy artifact-registry-service@channel-rescue.iam.gserviceaccount.com
-
-
-      - id: 'build_docker'
-        name: 'Build and push the Docker image'
-        run: |-
-          echo "Dockerising..."
-          docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
-          gcloud auth configure-docker europe-west2-docker.pkg.dev
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
-          docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
+          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d @request.json https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT}:getIamPolicy
+            #       - id: 'setup-gcloud'
+            #         name: 'Setup the Google Cloud SDK'
+            #         uses: 'google-github-actions/setup-gcloud@v1'
+            # 
+            #       - name: Check Identity
+            #         run: gcloud auth list
+            # 
+            #       - name: Check Permissions
+            #         run: gcloud iam service-accounts get-iam-policy artifact-registry-service@channel-rescue.iam.gserviceaccount.com
+            # 
+            # 
+            #       - id: 'build_docker'
+            #         name: 'Build and push the Docker image'
+            #         run: |-
+            #           echo "Dockerising..."
+            #           docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+            #           gcloud auth configure-docker europe-west2-docker.pkg.dev
+            #           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+            #           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
