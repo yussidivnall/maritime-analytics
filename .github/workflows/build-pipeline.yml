@@ -28,6 +28,7 @@ jobs:
             
       - name: Use Access Token
         run: |
+          echo "${{ steps.auth.outputs }}"
           echo ${{ steps.auth.outputs.credentials }}
           ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
           echo "Access Token: $ACCESS_TOKEN"
