@@ -30,7 +30,7 @@ jobs:
         name: 'try doing manual things instead of gcloud'
         run: |-
           echo "Manual"
-          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token" -H "Content-Type: application/json" https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT_EMAIL}:getIamPolicy
+          curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json" https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT_EMAIL}:getIamPolicy
 
 
       - id: 'setup-gcloud'
