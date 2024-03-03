@@ -4,7 +4,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
   WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
-  DOCKER_REGISTRY: https://europe-west2-docker.pkg.dev
+  DOCKER_REGISTRY: europe-west2-docker.pkg.dev
 
 on:
   - push
@@ -29,8 +29,8 @@ jobs:
 
       - name: Build and push docker
         run: |
-          DOCKER_IMAGE="https://europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener"
-          echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin ${{ env.DOCKER_REGISTRY }}
+          DOCKER_IMAGE="europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener"
+          echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://${{ env.DOCKER_REGISTRY }}
           # docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
           docker build -t "${DOCKER_IMAGE}:latest" .
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
