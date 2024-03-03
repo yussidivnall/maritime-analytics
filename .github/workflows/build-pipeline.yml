@@ -20,17 +20,17 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: 'channel-rescue'
+          project_id: ${PROJECT_ID}
           token_format: 'access_token'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
-          service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
+          service_account: ${SERVICE_ACCOUNT}
           create_credentials_file: true
 
       - id: 'manual-with-token'
         name: 'try doing manual things instead of gcloud'
         run: |-
           echo "Manual"
-          echo "${{ steps.auth.output.access_token }}""
+          echo "${{ steps.auth.output.access_token }}"
           curl -H "Authorization: Bearer ${{ steps.auth.output.access_token }}" -H "Content-Type: application/json" https://iam.googleapis.com/v1/projects/${PROJECT_ID}/serviceAccounts/${SERVICE_ACCOUNT}:getIamPolicy
 
 
