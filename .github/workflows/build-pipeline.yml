@@ -26,7 +26,7 @@ jobs:
           service_account: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
           create_credentials_file: true
 
-      - id: 'manual with token'
+      - id: 'manual-with-token'
         name: 'try doing manual things instead of gcloud'
         run: |-
           echo "Manual"
