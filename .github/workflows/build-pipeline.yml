@@ -4,6 +4,9 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
   WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
+  DOCKER_REGISTRY: https://europe-west2-docker.pkg.dev
+  DOCKER_IMAGE: ${{ env.DOCKER_REGISTRY }}/${{env.PROJECT_ID}}/listener-services/ais-listener
+
 
 on:
   - push
@@ -25,22 +28,10 @@ jobs:
           service_account: ${{ env.SERVICE_ACCOUNT }}
           token_format: 'access_token'
           export_environment_variables: true
-            
-      - name: test envs
-        run: |-
-          echo "CLOUDSDK_PROJECT: ${{ env.CLOUDSDK_PROJECT }}"
-          echo "CLOUDSDK_CORE_PROJECT: ${{ env.CLOUDSDK_CORE_PROJECT }}"
-          echo "GCP_PROJECT: ${{ env.GCP_PROJECT }}"
-          echo "GCP_PROJECT_NUMBER: ${{ env.GCP_PROJECT_NUMBER }}"
-          echo "PROJECT_NUMBER: ${{ env.PROJECT_NUMBER }}"
-          echo "GCLOUD_PROJECT: ${{ env.GCLOUD_PROJECT }}"
-          echo "GOOGLE_CLOUD_PROJECT: ${{ env.GOOGLE_CLOUD_PROJECT }}"
-          echo ${{ env }}
 
       - name: Build and push docker
         run: |
-          echo ${{ steps.auth.outputs.access_token }}
-          curl -H "Authorization: Bearer ${{ steps.auth.outputs.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
-          echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          echo "Will push image ${DOCKER_IMAGE}"
+          echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin ${{ env.DOCKER_REGISTRY }}
           docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
