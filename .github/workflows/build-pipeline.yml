@@ -1,8 +1,8 @@
 name: "Build and deploy"
 
 env:
-  PROJECT_ID: 'channel-rescue'
-  SERVICE_ACCOUNT: 'artifact-registry-service@channel-rescue.iam.gserviceaccount.com'
+  PROJECT_ID: channel-rescue
+  SERVICE_ACCOUNT: artifact-registry-service@channel-rescue.iam.gserviceaccount.com
 
 on:
   - push
