@@ -29,7 +29,7 @@ jobs:
 
       - name: Build and push docker
         run: |
-          DOCKER_IMAGE=${DOCKER_REGISTRY}/channel-rescue/listener-services/ais-listener
+          DOCKER_IMAGE="${DOCKER_REGISTRY}/channel-rescue/listener-services/ais-listener"
           echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin ${{ env.DOCKER_REGISTRY }}
           docker build -t ${DOCKER_IMAGE}:latest .
           docker push ${DOCKER_IMAGE}:latest
