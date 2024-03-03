@@ -25,6 +25,14 @@ jobs:
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: ${{ env.SERVICE_ACCOUNT }}
           create_credentials_file: true
+            
+      - name: Use Access Token
+        run: |
+          ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
+          echo "Access Token: $ACCESS_TOKEN"
+          curl -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
+        env:
+          ACCESS_TOKEN: ${{ steps.auth.outputs.credentials }}
 
       - id: 'manual-with-token'
         name: 'try doing manual things instead of gcloud'
