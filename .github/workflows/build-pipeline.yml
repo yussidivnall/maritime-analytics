@@ -1,9 +1,9 @@
 name: "Build and deploy"
 
 env:
-  PROJECT_ID: channel-rescue
-  SERVICE_ACCOUNT: artifact-registry-service@channel-rescue.iam.gserviceaccount.com
-  WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+  WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
 
 on:
   - push
@@ -21,7 +21,7 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
           token_format: 'access_token'
           export_environment_variables: true
@@ -37,9 +37,7 @@ jobs:
           echo "GOOGLE_CLOUD_PROJECT: ${{ env.GOOGLE_CLOUD_PROJECT }}"
           echo ${{ env }}
 
-      - name: Use Access Token
-        env:
-          ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+      - name: Build and push docker
         run: |
           echo ${{ steps.auth.outputs.access_token }}
           curl -H "Authorization: Bearer ${{ steps.auth.outputs.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
