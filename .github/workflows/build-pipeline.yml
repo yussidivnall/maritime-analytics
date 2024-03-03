@@ -29,12 +29,10 @@ jobs:
           ACCESS_TOKEN: ${{ steps.auth.outputs.credentials }}
         run: |
           echo ${{ steps.auth.outputs.access_token }}
-          # echo "${{ steps.auth.outputs }}"
-          # echo "Creds: ${{ steps.auth.outputs.credentials }};"
-          # ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
-          # echo "Access Token: $ACCESS_TOKEN"
           curl -H "Authorization: Bearer ${{ steps.auth.outputs.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
-          echo ${{ env.ACCESS_TOKEN }} | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+            # echo ${{ env.ACCESS_TOKEN }} | docker login -u oauth2accesstoken --password-stdin https://europe-west2-docker.pkg.dev
+          docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+          docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
 
       - id: 'manual-with-token'
         name: 'try doing manual things instead of gcloud'
