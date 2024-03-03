@@ -20,19 +20,21 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
+          # project_id: ${{ env.PROJECT_ID }}
           # token_format: 'json'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: ${{ env.SERVICE_ACCOUNT }}
-          create_credentials_file: true
+          token_format: 'access_token'
+          # create_credentials_file: true
             
       - name: Use Access Token
         run: |
-          echo "${{ steps.auth.outputs }}"
-          echo "Creds: ${{ steps.auth.outputs.credentials }};"
-          ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
-          echo "Access Token: $ACCESS_TOKEN"
-          curl -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
+          echo ${{ steps.auth.outputs.access_token }}
+          # echo "${{ steps.auth.outputs }}"
+          # echo "Creds: ${{ steps.auth.outputs.credentials }};"
+          # ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
+          # echo "Access Token: $ACCESS_TOKEN"
+          curl -H "Authorization: Bearer ${{ steps.auth.outputs.access_token }}" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
         env:
           ACCESS_TOKEN: ${{ steps.auth.outputs.credentials }}
 
