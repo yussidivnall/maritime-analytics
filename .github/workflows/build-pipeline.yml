@@ -28,6 +28,7 @@ jobs:
             
       - name: Use Access Token
         run: |
+          echo ${{ steps.auth.outputs.credentials }}
           ACCESS_TOKEN=$(echo ${{ steps.auth.outputs.credentials }} | jq -r '.access_token')
           echo "Access Token: $ACCESS_TOKEN"
           curl -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json; charset=utf-8" -d "@request.json" "https://iam.googleapis.com/v1/projects/${{ env.PROJECT_ID }}/serviceAccounts/${{ env.SERVICE_ACCOUNT }}:getIamPolicy"
