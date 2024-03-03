@@ -3,6 +3,7 @@ name: "Build and deploy"
 env:
   PROJECT_ID: channel-rescue
   SERVICE_ACCOUNT: artifact-registry-service@channel-rescue.iam.gserviceaccount.com
+  WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github
 
 on:
   - push
@@ -30,8 +31,11 @@ jobs:
           echo "CLOUDSDK_PROJECT: ${{ env.CLOUDSDK_PROJECT }}"
           echo "CLOUDSDK_CORE_PROJECT: ${{ env.CLOUDSDK_CORE_PROJECT }}"
           echo "GCP_PROJECT: ${{ env.GCP_PROJECT }}"
+          echo "GCP_PROJECT_NUMBER: ${{ env.GCP_PROJECT_NUMBER }}"
+          echo "PROJECT_NUMBER: ${{ env.PROJECT_NUMBER }}"
           echo "GCLOUD_PROJECT: ${{ env.GCLOUD_PROJECT }}"
           echo "GOOGLE_CLOUD_PROJECT: ${{ env.GOOGLE_CLOUD_PROJECT }}"
+          echo ${{ env }}
 
       - name: Use Access Token
         env:
