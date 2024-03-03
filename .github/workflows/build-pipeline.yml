@@ -31,5 +31,6 @@ jobs:
         run: |
           DOCKER_IMAGE="https://europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener"
           echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin ${{ env.DOCKER_REGISTRY }}
-          docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+          # docker build -t europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest .
+          docker build -t "${DOCKER_IMAGE}:latest" .
           docker push europe-west2-docker.pkg.dev/channel-rescue/listener-services/ais-listener:latest
