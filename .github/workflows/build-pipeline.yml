@@ -21,7 +21,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ env.PROJECT_ID }}
-          token_format: 'json'
+          # token_format: 'json'
           workload_identity_provider: 'projects/96495653362/locations/global/workloadIdentityPools/ccreate-cicd-identity-pool/providers/github'
           service_account: ${{ env.SERVICE_ACCOUNT }}
           create_credentials_file: true
