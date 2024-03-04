@@ -1,11 +1,13 @@
 name: "Build and deploy"
 
 env:
-  # Required Secrets in Github: GCP_PROJECT_ID, GCP_SERVICE_ACCOUNT_EMAIL, GCP_PROJECT_NUMBER, GCP_WORKLOAD_IDENTITY_POOL
+  # Required Secrets in Github: 
+  # GCP_PROJECT_ID, GCP_SERVICE_ACCOUNT_EMAIL, GCP_PROJECT_NUMBER, GCP_WORKLOAD_IDENTITY_POOL
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
   WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
   DOCKER_REGISTRY: europe-west2-docker.pkg.dev
+  DOCKER_IMAGE: listener-services/ais-listener
 
 on:
   - push
@@ -30,7 +32,7 @@ jobs:
 
       - name: Build and push docker
         run: |
-          DOCKER_IMAGE="${DOCKER_REGISTRY}/${PROJECT_ID}/listener-services/ais-listener"
+          DOCKER_IMAGE_PATH="${DOCKER_REGISTRY}/${PROJECT_ID}/${DOCKER_IMAGE}"
           echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://${{ env.DOCKER_REGISTRY }}
-          docker build -t "${DOCKER_IMAGE}:latest" .
-          docker push "${DOCKER_IMAGE}:latest"
+          docker build -t "${DOCKER_IMAGE_PATH}:latest" .
+          docker push "${DOCKER_IMAGE_PATH}:latest"
