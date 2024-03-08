@@ -8,6 +8,7 @@ env:
   WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
   DOCKER_REGISTRY: europe-west2-docker.pkg.dev
   DOCKER_IMAGE: listener-services/ais-listener
+  SERVICE_NAME: ais-listener-service
 
 on:
   - push
@@ -36,3 +37,15 @@ jobs:
           echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://${{ env.DOCKER_REGISTRY }}
           docker build -t "${DOCKER_IMAGE_PATH}:latest" .
           docker push "${DOCKER_IMAGE_PATH}:latest"
+
+      - id: 'deploy'
+        name: 'Deploy to cloudrun'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
+      
+      - name: 'Use output'
+        run: |
+          'echo ${{ toJSON(steps.deploy.outputs) }}
+          'curl "${{ steps.deploy.outputs.url }}/info"'
