@@ -49,5 +49,5 @@ jobs:
       
       - name: 'Use output'
         run: |
-          'echo "${{ toJSON(steps.deploy.outputs)" }}'
+          'echo "${{ toJSON(steps.deploy.outputs) }}"'
           'curl "${{ steps.deploy.outputs.url }}/info"'
