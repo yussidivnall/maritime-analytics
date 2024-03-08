@@ -38,7 +38,9 @@ jobs:
           echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://${{ env.DOCKER_REGISTRY }}
           docker build -t "${DOCKER_IMAGE_PATH}:latest" .
           docker push "${DOCKER_IMAGE_PATH}:latest"
-
+  deploy-to-staging:
+    runs-on: ubuntu-latest
+    steps:
       - id: 'deploy'
         name: 'Deploy to cloudrun'
         uses: 'google-github-actions/deploy-cloudrun@v2'
@@ -49,5 +51,4 @@ jobs:
       
       - name: 'Use output'
         run: |
-          'echo "${{ toJSON(steps.deploy.outputs) }}"'
           'curl "${{ steps.deploy.outputs.url }}/info"'
