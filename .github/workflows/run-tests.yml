@@ -1,0 +1,15 @@
+name: "Run Tests"
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - id: 'install'
+        name: 'Install the npm stuff'
+        run: npm install
+
+      - id: 'test'
+        name: 'Run unit tests'
+        run: npm test

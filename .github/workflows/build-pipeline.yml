@@ -12,7 +12,10 @@ env:
   SERVICE_REGION: europe-west2
 
 on:
-  - push
+  workflow_run:
+    workflows: ['Run Tests']
+    types:
+      - completed
 
 jobs:
   build_and_push_docker:
