@@ -9,6 +9,7 @@ env:
   DOCKER_REGISTRY: europe-west2-docker.pkg.dev
   DOCKER_IMAGE: listener-services/ais-listener
   SERVICE_NAME: ais-listener-service
+  SERVICE_REGION: europe-west2
 
 on:
   - push
@@ -43,9 +44,10 @@ jobs:
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
           service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.SERVICE_REGION }}
           image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
       
       - name: 'Use output'
         run: |
-          'echo ${{ toJSON(steps.deploy.outputs) }}'
+          'echo "${{ toJSON(steps.deploy.outputs)" }}'
           'curl "${{ steps.deploy.outputs.url }}/info"'
