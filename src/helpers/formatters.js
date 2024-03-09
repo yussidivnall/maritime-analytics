@@ -30,7 +30,7 @@ function formatPositionReport(record) {
     ship_name: record['MetaData']['ShipName'],
     cog: record['Message']['PositionReport']['Cog'],
     lat: record['Message']['PositionReport']['Latitude'],
-    long: record['Message']['PositionReport']['Longtitude'],
+    long: record['Message']['PositionReport']['Longitude'],
     msg_id: record['Message']['PositionReport']['MessageID'],
     nav_status: record['Message']['PositionReport']['NavigationalStatus'],
     pos_accuracy: record['Message']['PositionReport']['PositionAccuracy'],
