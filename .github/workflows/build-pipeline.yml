@@ -1,4 +1,11 @@
-name: "Build and deploy"
+name: Build and deploy
+
+on:
+  - push
+  #  workflow_run:
+  #    workflows: ['Run Tests']
+  #    types:
+  #      - completed
 
 env:
   # Required Secrets in Github: 
@@ -10,12 +17,6 @@ env:
   DOCKER_IMAGE: listener-services/ais-listener
   SERVICE_NAME: ais-listener-service
   SERVICE_REGION: europe-west2
-
-on:
-  workflow_run:
-    workflows: ['Run Tests']
-    types:
-      - completed
 
 jobs:
   build_and_push_docker:
