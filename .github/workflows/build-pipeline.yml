@@ -64,6 +64,9 @@ jobs:
         name: 'Deploy to cloudrun'
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
+          env_vars: |
+            CONFIG_BUCKET=ccreate-configs
+            CONFIG_PATH=config/ais_listener.staging.conf.json
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.SERVICE_REGION }}
           image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
