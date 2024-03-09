@@ -68,6 +68,6 @@ jobs:
           region: ${{ env.SERVICE_REGION }}
           image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
       
-      - name: 'Use output'
-        run: |
-          'curl "${{ steps.deploy.outputs.url }}/info"'
+            #       - name: 'Use output'
+            #         run: |
+            #           'curl -H  "${{ steps.deploy.outputs.url }}/info"'
