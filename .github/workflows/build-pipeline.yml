@@ -1,11 +1,13 @@
 name: Build and deploy
 
 on:
-  - push
-  #  workflow_run:
-  #    workflows: ['Run Tests']
-  #    types:
-  #      - completed
+  pull_request:
+    branches: 
+      - master
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
 
 env:
   # Required Secrets in Github: 
@@ -21,6 +23,7 @@ env:
 jobs:
   build_and_push_docker:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -45,6 +48,7 @@ jobs:
 
   deploy_to_staging:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
     needs: build_and_push_docker
     permissions:
       contents: 'read'
