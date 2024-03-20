@@ -1,7 +1,7 @@
 {
     "arena": [[[51.399, 2.2666], [50.85, 0.639]]],
     "boats":[],
-    "granularity": 30000,
+    "granularity": 120000,
     "dataset_id": "AIS",
     "position_reports_table_id": "Position Reports",
     "buffer_size": 100,

@@ -40,7 +40,7 @@ describe('Tests formatters', () => {
     const expected = {
       'cog': 229.4,
       'lat': 51.045973333333336,
-      'long': undefined,
+      'long': 1.3993183333333334,
       'mmsi': 511101258,
       'msg_id': 1,
       'nav_status': 0,

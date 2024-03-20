@@ -1,0 +1,80 @@
+name: Build and deploy
+
+on:
+  pull_request:
+    branches: 
+      - master
+  workflow_run:
+    workflows: ["Run Tests"]
+    types:
+      - completed
+
+env:
+  # Required Secrets in Github: 
+  # GCP_PROJECT_ID, GCP_SERVICE_ACCOUNT_EMAIL, GCP_PROJECT_NUMBER, GCP_WORKLOAD_IDENTITY_POOL
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+  WORKLOAD_IDENTITY_PROVIDER: projects/${{secrets.GCP_PROJECT_NUMBER}}/locations/global/workloadIdentityPools/${{secrets.GCP_WORKLOAD_IDENTITY_POOL}}/providers/github
+  DOCKER_REGISTRY: europe-west2-docker.pkg.dev
+  DOCKER_IMAGE: listener-services/ais-listener
+  SERVICE_NAME: ais-listener-service
+  SERVICE_REGION: europe-west2
+
+jobs:
+  build_and_push_docker:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+          export_environment_variables: true
+
+      - name: Build and push docker
+        run: |
+          DOCKER_IMAGE_PATH="${DOCKER_REGISTRY}/${PROJECT_ID}/${DOCKER_IMAGE}"
+          echo ${{ steps.auth.outputs.access_token }} | docker login -u oauth2accesstoken --password-stdin https://${{ env.DOCKER_REGISTRY }}
+          docker build -t "${DOCKER_IMAGE_PATH}:latest" .
+          docker push "${DOCKER_IMAGE_PATH}:latest"
+
+  deploy_to_staging:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
+    needs: build_and_push_docker
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - uses: 'actions/checkout@v4'
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          token_format: 'access_token'
+          export_environment_variables: true
+      - id: 'deploy'
+        name: 'Deploy to cloudrun'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          env_vars: |
+            CONFIG_BUCKET=ccreate-configs
+            CONFIG_PATH=config/ais_listener.staging.conf.json
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.SERVICE_REGION }}
+          image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
+      
+            #       - name: 'Use output'
+            #         run: |
+            #           'curl -H  "${{ steps.deploy.outputs.url }}/info"'
