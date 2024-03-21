@@ -110,8 +110,22 @@ async function run(config) {
     arena: config.arena,
     tracked_boats: config.boats,
   };
-  const ws = new WebSocket('wss://stream.aisstream.io/v0/stream', {rejectUnauthorized: false});
-  ws.on('open', ()=>{
+
+  let ws = new WebSocket('wss://stream.aisstream.io/v0/stream');
+
+  // Keep track of updates in case session become stale (it happens)
+  lastUpdate = null;
+  staleTimeout = 1000 * 60 * 2;
+  setInterval( async () =>{
+    if (lastUpdate && Date.now() - lastUpdate > staleTimeout) {
+      console.error(
+          `Stale AISStream session, upate was at ${lastUpdate}, `+
+          `restarting socket`);
+      ws = new WebSocket('wss://stream.aisstream.io/v0/stream');
+    }
+  }, staleTimeout);
+
+  ws.on('open', ()=> {
     // subscribe to AIS Stream
     const subscription = getAPISubscriptionRequest(config);
     ws.send(JSON.stringify(subscription));
@@ -119,6 +133,7 @@ async function run(config) {
   });
   ws.on('message', (message) =>{
     // console.debug( JSON.parse(message) );
+    lastUpdate = Date.now();
     handleRecord(JSON.parse(message));
   });
   ws.on('error', (err)=>{
@@ -129,6 +144,7 @@ async function run(config) {
     process.exit();
   });
 }
+
 
 /**
  * Returns basic static info: arena, tracked boats
