@@ -13,12 +13,12 @@ env:
   # Required Secrets in Github: 
   # GCP_PROJECT_ID, GCP_SERVICE_ACCOUNT_EMAIL, GCP_PROJECT_NUMBER, GCP_WORKLOAD_IDENTITY_POOL
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-    # SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
-    # WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER}}
-  SERVICE_ACCOUNT: "deployment-service@ccreate.iam.gserviceaccount.com"
-  WORKLOAD_IDENTITY_PROVIDER: "projects/722609306250/locations/global/workloadIdentityPools/cicd-wip/providers/gitops-wipid"
+  # SERVICE_ACCOUNT: "deployment-service@ccreate.iam.gserviceaccount.com"
+  SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+  # WORKLOAD_IDENTITY_PROVIDER: "projects/722609306250/locations/global/workloadIdentityPools/cicd-wip/providers/gitops-wipid"
+  WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_POOL_PROVIDER}}
   DOCKER_REGISTRY: europe-west2-docker.pkg.dev
-  DOCKER_IMAGE: listener-services/ais-listener
+  DOCKER_IMAGE: ccr-services/ais-listener
   SERVICE_NAME: ais-listener-service
   SERVICE_REGION: europe-west2
 
