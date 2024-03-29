@@ -51,35 +51,35 @@ jobs:
           docker build -t "${DOCKER_IMAGE_PATH}:latest" .
           docker push "${DOCKER_IMAGE_PATH}:latest"
 
-  deploy_to_staging:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
-    needs: build_and_push_docker
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    steps:
-      - uses: 'actions/checkout@v4'
-
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
-          token_format: 'access_token'
-          export_environment_variables: true
-      - id: 'deploy'
-        name: 'Deploy to cloudrun'
-        uses: 'google-github-actions/deploy-cloudrun@v2'
-        with:
-          env_vars: |
-            CONFIG_BUCKET=ccreate-configs
-            CONFIG_PATH=config/ais_listener.staging.conf.json
-          service: ${{ env.SERVICE_NAME }}
-          region: ${{ env.SERVICE_REGION }}
-          image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
-      
-            #       - name: 'Use output'
-            #         run: |
-            #           'curl -H  "${{ steps.deploy.outputs.url }}/info"'
+          #   deploy_to_staging:
+          #     runs-on: ubuntu-latest
+          #     if: github.event_name == 'workflow_run' || github.event_name == 'pull_request'
+          #     needs: build_and_push_docker
+          #     permissions:
+          #       contents: 'read'
+          #       id-token: 'write'
+          #     steps:
+          #       - uses: 'actions/checkout@v4'
+          # 
+          #       - id: 'auth'
+          #         name: 'Authenticate to Google Cloud'
+          #         uses: 'google-github-actions/auth@v2'
+          #         with:
+          #           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          #           service_account: ${{ env.SERVICE_ACCOUNT }}
+          #           token_format: 'access_token'
+          #           export_environment_variables: true
+          #       - id: 'deploy'
+          #         name: 'Deploy to cloudrun'
+          #         uses: 'google-github-actions/deploy-cloudrun@v2'
+          #         with:
+          #           env_vars: |
+          #             CONFIG_BUCKET=ccreate-configs
+          #             CONFIG_PATH=config/ais_listener.staging.conf.json
+          #           service: ${{ env.SERVICE_NAME }}
+          #           region: ${{ env.SERVICE_REGION }}
+          #           image: ${{env.DOCKER_REGISTRY}}/${{env.PROJECT_ID}}/${{env.DOCKER_IMAGE}}:latest
+          #       
+          #             #       - name: 'Use output'
+          #             #         run: |
+          #             #           'curl -H  "${{ steps.deploy.outputs.url }}/info"'
